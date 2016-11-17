@@ -54,9 +54,12 @@ class Groups:
     return d
 
 if __name__ ==  '__main__':
-  if len(sys.argv) < 2:
-    sys.exit('Usage: %s student csv file from Google Spreadsheet' % sys.argv[0])
+  if len(sys.argv) < 3:
+    print "The first argument should be csv file from Google Spreadsheet"
+    sys.exit(1)
   if not os.path.exists(sys.argv[1]):
+    sys.exit('ERROR: File %s was not found!' % sys.argv[1])
+  if not os.path.exists(sys.argv[2]):
     sys.exit('ERROR: File %s was not found!' % sys.argv[1])
   fname = sys.argv[1].find('.csv')
   if fname == -1:
@@ -114,7 +117,8 @@ if __name__ ==  '__main__':
   database = list(set(database))
 
   # check whether pairs match
-  loners = []
+  loners_uid = []
+  loners_choice = []
   for i in database:
     uids.remove(i[0])
     if i[2] == '':
@@ -129,6 +133,10 @@ if __name__ ==  '__main__':
 
   # loners_uid/choice - list of people without partner
   # uids - list of people who have not submitted anything
+  print "\nStudents without a partner:"
+  print zip(loners_uid, loners_choice)
+  print "\n\nStudents without choice:"
+  print uids
 
   # generate group assignment
   gg = Groups()
