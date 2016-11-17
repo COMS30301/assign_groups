@@ -4,6 +4,9 @@ import csv, os, sys, re
 uid_rx = re.compile(r"""
   .*-\s*(?P<uid>([a-z]{2}[0-9]{4,5})|([a-z]{5,6}))$
 """, re.M | re.X)
+ui_rx = re.compile(r"""
+  (?P<uid>([a-z]{2}[0-9]{4,5})|([a-z]{5,6}))
+""", re.M | re.X)
 
 class Groups:
   kaggle = 1
@@ -61,11 +64,23 @@ if __name__ ==  '__main__':
   else:
     fname = sys.argv[1][:fname]
 
+  # read in usernames downloaded form FEN
+  uids = []
+  with open(sys.argv[2], 'r') as usernames:
+    u = csv.reader(usernames)
+    for i in u:
+      if not i:
+        continue
+      uid = ui_rx.search(i[0].lower().strip())
+      if uid:
+        uid = uid.group(1).strip()
+        uids.append(uid)
+
   database = []
   with open(sys.argv[1], 'r') as csvfile:
     choices = csv.reader(csvfile)
     for row in choices:
-      uid = uid_rx.search(row[1].lower().strip())
+      uid = uid_rx.search(row[2].lower().strip())
       if uid:
         uid = uid.group(1).strip()
       else:
@@ -73,7 +88,7 @@ if __name__ ==  '__main__':
         print('Skipping this row')
         continue
 
-      option = row[2].lower().strip()
+      option = row[3].lower().strip()
       if 'kaggle' in option:
           option = 'k'
       elif 'spam' in option:
@@ -87,7 +102,7 @@ if __name__ ==  '__main__':
         print('Setting choice to \'#\'\n')
         option = '#'
 
-      partner = uid_rx.search(row[3].lower().strip())
+      partner = uid_rx.search(row[4].lower().strip())
       if partner:
         partner = partner.group(1).strip()
       else:
@@ -95,12 +110,25 @@ if __name__ ==  '__main__':
 
       database.append( (uid, option, partner) )
 
+  # remove duplicates form the database
+  database = list(set(database))
+
   # check whether pairs match
+  loners = []
   for i in database:
-    if i[2] != '':
+    uids.remove(i[0])
+    if i[2] == '':
+      if i[1] != 'q' and i[1] != 'r':
+        print( 'person: ' + str(i[0]) + ' did not declare a pair for *' + i[1] + '* assignment')
+        loners_uid.append(i[0])
+        loners_choice.append(i[1])
+    else:
       irev = i[::-1]
       if irev not in database:
         print( 'person: ' + str(i[0]) + ' declared a pair: ' + str(i) + ' but person: ' + str(i[2]) + " did not")
+
+  # loners_uid/choice - list of people without partner
+  # uids - list of people who have not submitted anything
 
   # generate group assignment
   gg = Groups()
