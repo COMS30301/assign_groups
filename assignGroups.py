@@ -44,10 +44,13 @@ class Groups:
 
   def getGroupsList(self):
     d = []
-    for i in range(1, 41):
+    for i in range(1, self.kaggle+2):
       d.append("Kaggle%02d" % i)
+    for i in range(1, self.spam+2):
       d.append("Spam%02d" % i)
+    for i in range(1, self.quiz+2):
       d.append("Quiz%02d" % i)
+    for i in range(1, self.research+2):
       d.append("Resrch%02d" % i)
     d.sort()
     d = ['NotAllocated'] + d
@@ -135,12 +138,9 @@ if __name__ ==  '__main__':
       if i[2] in partners:
         if i[1] != partners[i[2]][0]:
           print "~~~person: " + str(i[0]) + " declared a partner: " + str(i[2]) + " but choices do not match: *" + i[1] + "* and *" + partners[i[2]][0] + "* declared"
-          if i[0] not in mismatched_option:
-            mismatched_option.append(i[0])
-          if i[2] not in mismatched_option:
-            mismatched_option.append(i[2])
+          if (i[0], i[2]) not in mismatched_option and (i[2], i[0]) not in mismatched_option:
+            mismatched_option.append((i[0], i[2]))
           continue
-        # TODO: add partner agreement checking
         if i[0] != partners[i[2]][1]:
           print "+++Both students declared a partner but they don't match", i, partners[i[2]]
           if i[0] not in mismatched_student:
@@ -165,12 +165,24 @@ if __name__ ==  '__main__':
   print uids
 
   # generate group assignment
+  mm_a = [j[0] for j in mismatched_option]
+  mm_b = [j[1] for j in mismatched_option]
   gg = Groups()
   for i in database:
     # Skip mismatched students & loners & no choice
-    if i[0] in mismatched_option + mismatched_student + loners_uid + uids:
+    if i[0] in mismatched_student:
+      gg.addToGroup(i[0], 'q', '')
+      continue
+    elif i[0] in mm_a or i[0] in mm_b:
+      gg.addToGroup(i[0], 'q', i[2])
+      continue
+    elif i[0] in loners_uid:
+      gg.addToGroup(i[0], 'q', '')
       continue
     gg.addToGroup(i[0], i[1], i[2])
+  for i in uids:
+    gg.addToGroup(i, 'q', '')
+    continue
 
   # generate SAFE file
   gas = gg.getGroups()
