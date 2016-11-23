@@ -119,28 +119,57 @@ if __name__ ==  '__main__':
   # check whether pairs match
   loners_uid = []
   loners_choice = []
+  mismatched_option = []
+  mismatched_student = []
+  partners = {i[0]:(i[1],i[2]) for i in database}
   for i in database:
     uids.remove(i[0])
     if i[2] == '':
       if i[1] != 'q' and i[1] != 'r':
-        print( 'person: ' + str(i[0]) + ' did not declare a pair for *' + i[1] + '* assignment')
+        print "person: " + str(i[0]) + " did not declare a pair for *" + i[1] + "* assignment"
         loners_uid.append(i[0])
         loners_choice.append(i[1])
     else:
       irev = i[::-1]
+      # Check if partner did not declare the same option
+      if i[2] in partners:
+        if i[1] != partners[i[2]][0]:
+          print "~~~person: " + str(i[0]) + " declared a partner: " + str(i[2]) + " but choices do not match: *" + i[1] + "* and *" + partners[i[2]][0] + "* declared"
+          if i[0] not in mismatched_option:
+            mismatched_option.append(i[0])
+          if i[2] not in mismatched_option:
+            mismatched_option.append(i[2])
+          continue
+        # TODO: add partner agreement checking
+        if i[0] != partners[i[2]][1]:
+          print "+++Both students declared a partner but they don't match", i, partners[i[2]]
+          if i[0] not in mismatched_student:
+            mismatched_student.append(i[0])
+          if i[2] not in mismatched_student:
+            mismatched_student.append(i[2])
+          continue
+      # Check whether partner declared the same option
       if irev not in database:
-        print( 'person: ' + str(i[0]) + ' declared a pair: ' + str(i) + ' but person: ' + str(i[2]) + " did not")
+        print "person: " + str(i[0]) + " declared a pair: " + str(i) + " but person: " + str(i[2]) + " did not"
+        uids.remove(i[2])
 
   # loners_uid/choice - list of people without partner
   # uids - list of people who have not submitted anything
+  print "\nMismatched option students:"
+  print mismatched_option
+  print "\nMismatched uid students:"
+  print mismatched_student
   print "\nStudents without a partner:"
   print zip(loners_uid, loners_choice)
-  print "\n\nStudents without choice:"
+  print "\nStudents without choice:"
   print uids
 
   # generate group assignment
   gg = Groups()
   for i in database:
+    # Skip mismatched students & loners & no choice
+    if i[0] in mismatched_option + mismatched_student + loners_uid + uids:
+      continue
     gg.addToGroup(i[0], i[1], i[2])
 
   # generate SAFE file
