@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 import csv, os, sys, re
 
 uid_rx = re.compile(r"""
@@ -58,7 +60,7 @@ class Groups:
 
 if __name__ ==  '__main__':
   if len(sys.argv) < 3:
-    print "The first argument should be csv file from Google Spreadsheet"
+    print("The first argument should be csv file from Google Spreadsheet")
     sys.exit(1)
   if not os.path.exists(sys.argv[1]):
     sys.exit('ERROR: File %s was not found!' % sys.argv[1])
@@ -129,7 +131,7 @@ if __name__ ==  '__main__':
     uids.remove(i[0])
     if i[2] == '':
       if i[1] != 'q' and i[1] != 'r':
-        print "person: " + str(i[0]) + " did not declare a pair for *" + i[1] + "* assignment"
+        print("person: " + str(i[0]) + " did not declare a pair for *" + i[1] + "* assignment")
         loners_uid.append(i[0])
         loners_choice.append(i[1])
     else:
@@ -137,12 +139,12 @@ if __name__ ==  '__main__':
       # Check if partner did not declare the same option
       if i[2] in partners:
         if i[1] != partners[i[2]][0]:
-          print "~~~person: " + str(i[0]) + " declared a partner: " + str(i[2]) + " but choices do not match: *" + i[1] + "* and *" + partners[i[2]][0] + "* declared"
+          print("~~~person: " + str(i[0]) + " declared a partner: " + str(i[2]) + " but choices do not match: *" + i[1] + "* and *" + partners[i[2]][0] + "* declared")
           if (i[0], i[2]) not in mismatched_option and (i[2], i[0]) not in mismatched_option:
             mismatched_option.append((i[0], i[2]))
           continue
         if i[0] != partners[i[2]][1]:
-          print "+++Both students declared a partner but they don't match", i, partners[i[2]]
+          print("+++Both students declared a partner but they don't match", i, partners[i[2]])
           if i[0] not in mismatched_student:
             mismatched_student.append(i[0])
           if i[2] not in mismatched_student:
@@ -150,19 +152,19 @@ if __name__ ==  '__main__':
           continue
       # Check whether partner declared the same option
       if irev not in database:
-        print "person: " + str(i[0]) + " declared a pair: " + str(i) + " but person: " + str(i[2]) + " did not"
+        print("person: " + str(i[0]) + " declared a pair: " + str(i) + " but person: " + str(i[2]) + " did not")
         uids.remove(i[2])
 
   # loners_uid/choice - list of people without partner
   # uids - list of people who have not submitted anything
-  print "\nMismatched option students:"
-  print mismatched_option
-  print "\nMismatched uid students:"
-  print mismatched_student
-  print "\nStudents without a partner:"
-  print zip(loners_uid, loners_choice)
-  print "\nStudents without choice:"
-  print uids
+  print("\nMismatched option students:")
+  print(mismatched_option)
+  print("\nMismatched uid students:")
+  print(mismatched_student)
+  print("\nStudents without a partner:")
+  print(list(zip(loners_uid, loners_choice)))
+  print("\nStudents without choice:")
+  print(uids)
 
   # generate group assignment
   mm_a = [j[0] for j in mismatched_option]
